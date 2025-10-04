@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/prashantv/atuin-fzf/tcolor"
@@ -74,11 +75,6 @@ func atuinToFzf(results iter.Seq[atuinResult]) (io.Reader, error) {
 				panic(err)
 			}
 
-			exitStatus := " "
-			if r.Exit != "0" {
-				exitStatus = tcolor.Red.Foreground("exit " + r.Exit)
-			}
-
 			dirCtx := ""
 			if r.Directory == curDir {
 				dirCtx = tcolor.Gray.Foreground("(same cwd)")
@@ -90,7 +86,8 @@ func atuinToFzf(results iter.Seq[atuinResult]) (io.Reader, error) {
 				r.Directory,
 				r.Duration,
 				r.Time,
-				exitStatus,
+				r.RelativeTime,
+				exitColor(r.Exit),
 				dirCtx,
 			}, _delim))
 			if err != nil {
@@ -124,7 +121,7 @@ func fzf(input io.Reader, query string) error {
 		"--preview", previewCmd,
 		"--preview-window", "right:40%:wrap",
 		"--delimiter", _delim,
-		"--with-nth", "{1}  {6} {7}",
+		"--with-nth", "{1}  {7} {8}",
 		"--accept-nth", "{1}",
 		"--bind", "ctrl-y:execute-silent(echo -n {1} | pbcopy)+abort",
 		"--query", query,
@@ -144,26 +141,26 @@ func fzf(input io.Reader, query string) error {
 
 func fzfPreview(data string) error {
 	parts := strings.Split(data, _delim)
-	if len(parts) < 5 {
+	if len(parts) < 6 {
 		return fmt.Errorf("data format incorrect, expected 5 parts, got %d in %s", len(parts), data)
 	}
-	command, exitCode, directory, duration, timestamp := parts[0], parts[1], parts[2], parts[3], parts[4]
+	command, exitCode, directory, duration, timestamp, relTimestamp := parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]
 
 	exitCol := tcolor.Green
 	if exitCode != "0" {
 		exitCol = tcolor.Red
 	}
 
-	fmt.Println(tcolor.Bold("Full Command"))
+	fmt.Println(tcolor.Bold("Command"))
 	fmt.Println("───────────────────────────────────────────────────")
 	fmt.Println(command)
 	fmt.Println()
 	fmt.Println(tcolor.Bold("Execution Details"))
 	fmt.Println("───────────────────────────────────────────────────")
-	fmt.Printf("%-10s %s\n", "Status:", exitCol.Foreground(exitCode))
-	fmt.Printf("%-10s %s\n", "Ran In:", directory)
+	fmt.Printf("%-10s %s %s\n", "When:", timestamp, tcolor.Cyan.Foreground(relTimestamp+" ago"))
+	fmt.Printf("%-10s %s\n", "Directory:", shortenHome(directory))
+	fmt.Printf("%-10s %s\n", "Exit Code:", exitCol.Foreground(exitCode))
 	fmt.Printf("%-10s %s\n", "Duration:", duration)
-	fmt.Printf("%-10s %s\n", "When:", timestamp)
 	fmt.Println()
 	fmt.Println(tcolor.Bold("Recent Similar Commands"))
 	fmt.Println("───────────────────────────────────────────────────")
@@ -182,7 +179,12 @@ func fzfPreview(data string) error {
 		for r := range results {
 			if !seen[r] {
 				seen[r] = true
-				fmt.Printf("%-40.40s (%s)\n", r.Command, r.Directory)
+				fmt.Printf("%s %s %s\n%s\n",
+					tcolor.Cyan.Foreground(r.RelativeTime),
+					tcolor.Gray.Foreground(shortenHome(r.Directory)),
+					exitColor(r.Exit),
+					tcolor.Bold("$ ")+r.Command,
+				)
 			}
 		}
 		return nil
@@ -193,4 +195,22 @@ func fzfPreview(data string) error {
 		printResults("--cwd", directory),
 	)
 	return err
+}
+
+func exitColor(exitCode string) string {
+	if exitCode != "0" {
+		return tcolor.Red.Foreground("exit " + exitCode)
+	}
+	return ""
+}
+
+func shortenHome(s string) string {
+	homeDir, err := os.UserHomeDir()
+	if err == nil {
+		if suffix, ok := strings.CutPrefix(s, homeDir); ok {
+			return filepath.Join("~", suffix)
+		}
+	}
+
+	return s
 }

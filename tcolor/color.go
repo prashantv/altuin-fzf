@@ -7,6 +7,7 @@ type Color int
 const (
 	Red   Color = 1
 	Green Color = 2
+	Cyan  Color = 6
 	Gray  Color = 8
 )
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"iter"
 	"os"
 	"os/exec"
@@ -18,11 +19,12 @@ type atuinParams struct {
 }
 
 type atuinResult struct {
-	Time      string
-	Duration  string
-	Exit      string
-	Directory string
-	Command   string
+	Time         string
+	RelativeTime string
+	Duration     string
+	Exit         string
+	Directory    string
+	Command      string
 
 	Error error
 }
@@ -30,6 +32,7 @@ type atuinResult struct {
 func runAtuin(p atuinParams) (iter.Seq[atuinResult], error) {
 	format := strings.Join([]string{
 		"{time}",
+		"{relativetime}",
 		"{duration}",
 		"{exit}",
 		"{directory}",
@@ -62,15 +65,22 @@ func runAtuin(p atuinParams) (iter.Seq[atuinResult], error) {
 
 		scanner := bufio.NewScanner(stdout)
 		for scanner.Scan() {
-			parts := strings.SplitN(scanner.Text(), _atuinDelim, 5)
-			timestamp, duration, exitCode, directory, command := parts[0], parts[1], parts[2], parts[3], parts[4]
+			parts := strings.SplitN(scanner.Text(), _atuinDelim, 6)
+			if len(parts) < 6 {
+				yield(atuinResult{
+					Error: fmt.Errorf("text %q doesn't have expected 5 delimiters", scanner.Text()),
+				})
+				return
+			}
+			timestamp, relTimestamp, duration, exitCode, directory, command := parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]
 
 			if !yield(atuinResult{
-				Time:      timestamp,
-				Duration:  duration,
-				Exit:      exitCode,
-				Directory: directory,
-				Command:   command,
+				Time:         timestamp,
+				RelativeTime: relTimestamp,
+				Duration:     duration,
+				Exit:         exitCode,
+				Directory:    directory,
+				Command:      command,
 			}) {
 				return
 			}
