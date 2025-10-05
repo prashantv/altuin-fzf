@@ -16,21 +16,23 @@ import (
 
 const _delim = "\t:::\t"
 
-// TODOs:
-// Add fzf bind to go to a dir AND exec
-// Bind to Ctrl-R
-
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "--preview" {
-		if len(os.Args) > 2 {
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "--preview":
 			if err := fzfPreview(os.Args[2]); err != nil {
 				log.Fatal(err)
 			}
 			return
+		case "--zsh":
+			exe, err := os.Executable()
+			if err != nil {
+				exe = os.Args[0]
+			}
+			fmt.Printf(_zshFn, exe)
+			return
 		}
-		return
 	}
-
 	var initialQuery string
 	if len(os.Args) > 1 {
 		initialQuery = os.Args[1]
@@ -124,6 +126,7 @@ func fzf(input io.Reader, query string) error {
 		"--with-nth", "{1}  {7} {8}",
 		"--accept-nth", "{1}",
 		"--bind", "ctrl-y:execute-silent(echo -n {1} | pbcopy)+abort",
+		"--bind", "ctrl-o:become(printf \"CHDIR:\\t%s\\t%s\" {3} {1})",
 		"--query", query,
 		"--height", "80%",
 	)
