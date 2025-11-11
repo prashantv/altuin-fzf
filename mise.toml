@@ -1,6 +1,21 @@
 [tools]
 go = "1.25.4"
+gofumpt = "0.9.2"
 
 [tasks.build]
 run = 'go build .'
 
+[tasks.lint]
+depends = [
+	['gofumpt', '-l'],
+]
+
+[tasks.gofumpt]
+usage = '''
+arg "<mode>" default="-w" help="Mode for running gofumpt" {
+	choices "-d" "-w" "-l"
+}
+'''
+run = '''
+gofumpt ${usage_mode} *.go **/*.go
+'''
