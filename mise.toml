@@ -1,6 +1,7 @@
 [tools]
 go = "1.25.4"
 gofumpt = "0.9.2"
+goreleaser = "2.12"
 gotestsum = "1.13.0"
 
 [tasks.build]
@@ -26,4 +27,9 @@ arg "<mode>" default="-w" help="Mode for running gofumpt" {
 '''
 run = '''
 gofumpt ${usage_mode} *.go **/*.go
+'''
+
+[tasks.build-release]
+run = '''
+goreleaser release --snapshot --clean
 '''
