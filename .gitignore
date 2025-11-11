@@ -1,2 +1,4 @@
 # main binary
 atuin-fzf
+# goreleaser
+dist/
