@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"iter"
 	"os"
@@ -44,6 +45,7 @@ func runAtuin(p atuinParams) (iter.Seq[atuinResult], error) {
 		"search",
 		"--limit", strconv.Itoa(p.Limit),
 		"--format", format,
+		"--print0",
 	}
 	if p.FilterMode != "" {
 		args = append(args,
@@ -69,6 +71,7 @@ func runAtuin(p atuinParams) (iter.Seq[atuinResult], error) {
 		defer stdout.Close()
 
 		scanner := bufio.NewScanner(stdout)
+		scanner.Split(scanNull)
 		for scanner.Scan() {
 			parts := strings.SplitN(scanner.Text(), _atuinDelim, 6)
 			if len(parts) < 6 {
@@ -95,4 +98,21 @@ func runAtuin(p atuinParams) (iter.Seq[atuinResult], error) {
 			yield(atuinResult{Error: err})
 		}
 	}, nil
+}
+
+func scanNull(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+
+	if i := bytes.IndexByte(data, byte(0)); i >= 0 {
+		// terminated line.
+		return i + 1, data[0:i], nil
+	}
+	// If we're at EOF, we have a final, non-terminated line. Return it.
+	if atEOF {
+		return len(data), data, nil
+	}
+	// Request more data.
+	return 0, nil, nil
 }

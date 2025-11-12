@@ -23,6 +23,13 @@ summary if any
 - details
 -->
 
+
+## Unreleased
+
+### Fixed
+
+- Fix handling of multi-line commands and display them as multi-line in fzf.
+
 ## v0.0.1 - 2025-11-12
 
 Initial test release of atuin-fzf.

@@ -92,7 +92,7 @@ func atuinToFzf(results iter.Seq[atuinResult]) (io.Reader, error) {
 				dirCtx = tcolor.Gray.Foreground("(same cwd)")
 			}
 
-			_, err := fmt.Fprintln(w, strings.Join([]string{
+			_, err := fmt.Fprint(w, strings.Join([]string{
 				r.Command,
 				r.Exit,
 				r.Directory,
@@ -101,6 +101,7 @@ func atuinToFzf(results iter.Seq[atuinResult]) (io.Reader, error) {
 				r.RelativeTime,
 				exitColor(r.Exit),
 				dirCtx,
+				string(byte(0)),
 			}, _delim))
 			if err != nil {
 				// FIXME
@@ -125,6 +126,7 @@ func fzf(input io.Reader, query string) error {
 	previewCmd := fmt.Sprintf("%s --preview {}", selfExe)
 	fzfCmd := exec.Command(
 		"fzf",
+		"--read0",
 		"--tac",
 		"--ansi",
 		"--scheme", "history",
