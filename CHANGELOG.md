@@ -29,6 +29,8 @@ summary if any
 ### Fixed
 
 - Fix handling of multi-line commands and display them as multi-line in fzf.
+- Pass current buffer as initial search query.
+- Avoid builder paths in stack traces.
 
 ## v0.0.1 - 2025-11-12
 
