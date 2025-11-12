@@ -12,7 +12,7 @@ redraw-prompt() {
 
 atuin-fzf-history() {
     local result
-    result=$(%v)
+    result=$(%v "$BUFFER")
     if [[ -z "$result" ]]; then
         zle redisplay
         return
