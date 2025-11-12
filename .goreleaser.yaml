@@ -7,6 +7,8 @@ version: 2
 builds:
   - env:
       - CGO_ENABLED=0
+    flags:
+      - "-trimpath"
     goos:
       - linux
       - windows
@@ -22,4 +24,3 @@ archives:
     format_overrides:
       - goos: windows
         formats: [zip]
-
