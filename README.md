@@ -14,15 +14,16 @@ However, I found the interface lacking compared to fzf, so I thought why not use
 ## Install
 
  * Install atuin as per the [quickstart](https://github.com/atuinsh/atuin?tab=readme-ov-file#quickstart) or [install](https://docs.atuin.sh/guide/installation/) directions.
- * Update the atuin integration so it's not triggered for interactive use: `eval "$(atuin init zsh --disable-up-arrow --disable-ctrl-r)"`
- * Download `atuin-fzf`
- * Enable `atuin-fzf` to be used for Ctrl-R:
+ * Download `atuin-fzf` from the [Releases](https://github.com/prashantv/atuin-fzf/releases).
+ * Enable `atuin-fzf` to be used for Ctrl-R instead of `atuin`:
 
-```
-eval "$(/Users/prashant/go/src/prashantv/atuin-fzf/atuin-fzf --zsh)"
+```bash
+eval "$(atuin init zsh --disable-up-arrow --disable-ctrl-r)"
+eval "$(atuin-fzf --zsh)"
+# Note: The above assumes atuin-fzf is in your PATH.
 ```
 
-Note: Only bash is supported.
+Note: Only zsh is currently supported.
 
 ## Features
 
