@@ -23,6 +23,11 @@ summary if any
 - details
 -->
 
+## Unreleased
+
+### Added
+
+- Hide the preview window if the terminal width is too small.
 
 ## v0.0.2 - 2025-11-13
 
